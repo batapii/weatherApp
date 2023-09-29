@@ -1,12 +1,17 @@
 package com.example.weatherapp
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.ContactsContract.CommonDataKinds.Website.URL
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,9 +23,15 @@ import java.io.InputStreamReader
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+
 
         //0)準備　(APIキーと,URL(の基本部分)を定義）
         val apiKey = "1be276ac5cbb12362fb251047a74367b"
@@ -37,6 +48,7 @@ class MainActivity : AppCompatActivity() {
         val btnclear: Button = findViewById(R.id.btnclear)
         val etSearch: EditText = findViewById(R.id.etSearch)
         val btnSearch: Button = findViewById(R.id.btnSearch)
+        val btnCurrent: Button = findViewById(R.id.btnCurrent)
 
 //        //1)btnaTokyoが押されたら
 //        btnTokyo.setOnClickListener{
@@ -63,6 +75,28 @@ class MainActivity : AppCompatActivity() {
             val city = Search
             val weatherUrl = "$mainUrl&q=$city&appid=$apiKey"
             weatherTask(weatherUrl)
+        }
+        btnCurrent.setOnClickListener {
+            //現在位置の取得
+            //ACCESS_FINE_LOCATION=位置情報を取得する権限
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                //権限がない場合は、権限を求めるダイアログを表示
+                val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+                ActivityCompat.requestPermissions(this, permissions, 1000)
+                return@setOnClickListener
+            }
+            //権限がある場合は、現在位置を取得
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                //it=位置情報
+                val lat = it.latitude
+                val lon = it.longitude
+                val weatherUrl = "$mainUrl&lat=$lat&lon=$lon&appid=$apiKey"
+                weatherTask(weatherUrl)
+            }
         }
     }
 
