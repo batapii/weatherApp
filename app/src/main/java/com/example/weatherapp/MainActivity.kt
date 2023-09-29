@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.ContactsContract.CommonDataKinds.Website.URL
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -27,33 +28,41 @@ class MainActivity : AppCompatActivity() {
 
 
         //0)準備 viewを取得
-        val btnTokyo: Button = findViewById(R.id.btnTokyo)
-        val btnokinawa : Button = findViewById(R.id.btnOkinawa)
+//        val btnTokyo: Button = findViewById(R.id.btnTokyo)
+//        val btnokinawa : Button = findViewById(R.id.btnOkinawa)
         val tvCityName: TextView = findViewById(R.id.tvCityName)
         val tvCityWeather: TextView = findViewById(R.id.tvCityWeather)
         val tvmax: TextView = findViewById(R.id.tvmax)
         val tvMin : TextView = findViewById(R.id.tvMin)
         val btnclear: Button = findViewById(R.id.btnclear)
+        val etSearch: EditText = findViewById(R.id.etSearch)
+        val btnSearch: Button = findViewById(R.id.btnSearch)
 
-        //1)btnaTokyoが押されたら
-        btnTokyo.setOnClickListener{
-            //[1-1]東京のお天気URLを取得して
-            val weatherUrl = "$mainUrl&q=Tokyo&appid=$apiKey"
-
-            //[1-2]そのURLを元に得られた情報の結果を表示
-            //2)コルーチンを作る→3)HTTP通信（ワーカースレッド）→4)結果を表示（メインスレッド）
-            weatherTask(weatherUrl)
-        }
-        btnokinawa.setOnClickListener {
-            val weatherUrl = "$mainUrl&q=Okinawa&appid=$apiKey"
-
-            weatherTask(weatherUrl)
-        }
+//        //1)btnaTokyoが押されたら
+//        btnTokyo.setOnClickListener{
+//            //[1-1]東京のお天気URLを取得して
+//            val weatherUrl = "$mainUrl&q=Tokyo&appid=$apiKey"
+//
+//            //[1-2]そのURLを元に得られた情報の結果を表示
+//            //2)コルーチンを作る→3)HTTP通信（ワーカースレッド）→4)結果を表示（メインスレッド）
+//            weatherTask(weatherUrl)
+//        }
+//        btnokinawa.setOnClickListener {
+//            val weatherUrl = "$mainUrl&q=Okinawa&appid=$apiKey"
+//
+//            weatherTask(weatherUrl)
+//        }
         btnclear.setOnClickListener {
             tvCityName.text = "都市名"
             tvCityWeather.text = "都市の天気"
             tvmax.text = "最高気温"
             tvMin.text = "最低気温"
+        }
+        btnSearch.setOnClickListener {
+            val Search = etSearch.text.toString()
+            val city = Search
+            val weatherUrl = "$mainUrl&q=$city&appid=$apiKey"
+            weatherTask(weatherUrl)
         }
     }
 
@@ -67,6 +76,7 @@ class MainActivity : AppCompatActivity() {
             //4) 3を受けて、お天気でーた（JSONデータ）を表示（UIスレッド）
             weatherJsonTask(result)
         }
+
     }
 
     //3)HTTP通信（ワーカースレッド）の中身(suspend=中断する可能性がある関数につける）
