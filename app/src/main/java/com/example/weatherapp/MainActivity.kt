@@ -4,12 +4,13 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.ContactsContract.CommonDataKinds.Website.URL
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
@@ -23,11 +24,15 @@ import java.io.InputStreamReader
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var db: Database
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        db = Room.databaseBuilder(
+            applicationContext,
+            Database::class.java, "weather-database"
+        ).build()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -150,6 +155,7 @@ class MainActivity : AppCompatActivity() {
         val tvmax: TextView = findViewById(R.id.tvmax)
         val tvMin : TextView = findViewById(R.id.tvMin)
 
+
         //3で取得したJSON文字列をJSONオブジェクトに変換
 
         val jsonObj = JSONObject(result)
@@ -175,5 +181,19 @@ class MainActivity : AppCompatActivity() {
         //tvminに最低気温を表示
         tvMin.text = "最低気温:${main.getInt("temp_min")-273}℃"
 
+        val weatherData = WeatherData(
+            0,
+            cityName,
+            weather,
+            main.getInt("temp_max")-273,
+            main.getInt("temp_min")-273
+        )
+        //データベースに保存
+        lifecycleScope.launch(Dispatchers.IO) {
+            db.weatherDao().insert(weatherData)
+        }
+
+
     }
+
 }
